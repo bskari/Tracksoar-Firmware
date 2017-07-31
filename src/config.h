@@ -95,8 +95,15 @@
 // respectively. The first balloon will transmit at 00:00:00, 00:01:00,
 // 00:02:00, etc. and the second balloon will transmit at 00:00:30, 00:01:30,
 // 00:02:30, etc.
-#define APRS_SLOT     -1     // seconds. -1 disables slotted transmissions
-#define APRS_PERIOD   60    // seconds
+//
+// You can also configure to send more APRS packets when in low altitude. At
+// high altitudes, many APRS iGates will be picking up your packets, and the
+// folks at aprs.fi get annoyed if you're sending too quickly. Once every 60
+// seconds is a good interval.
+#define APRS_SLOT_S     -1     // seconds. -1 disables slotted transmissions
+#define APRS_LOW_ALTITUDE_PERIOD_S   30    // seconds
+#define APRS_HIGH_ALTITUDE_PERIOD_S   60   // Must be > APRS_LOW_ALTITUDE_PERIOD_S
+#define APRS_HIGH_ALTITUDE_M     5000   // 5000 m = 16404 ft
 
 // GPS baud rate (in bits per second). This is also the baud rate at which
 // debug data will be printed out the serial port.

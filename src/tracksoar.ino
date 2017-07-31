@@ -61,7 +61,7 @@ static const uint32_t VALID_POS_TIMEOUT = 2000;  // ms
 #include <SPI.h>
 
 // Module variables
-static int32_t next_aprs = 0;
+static int32_t next_aprs_ms = 0;
 
 
 void setup()
@@ -95,17 +95,17 @@ void setup()
 
   // Do not start until we get a valid time reference
   // for slotted transmissions.
-  if (APRS_SLOT >= 0) {
+  if (APRS_SLOT_S >= 0) {
     do {
       while (! Serial.available())
         power_save();
     } while (! gps_decode(Serial.read()));
 
-    next_aprs = millis() + 1000 *
-      (APRS_PERIOD - (gps_seconds + APRS_PERIOD - APRS_SLOT) % APRS_PERIOD);
+    next_aprs_ms = millis() + 1000 *
+      (APRS_HIGH_ALTITUDE_PERIOD_S - (gps_seconds + APRS_HIGH_ALTITUDE_PERIOD_S - APRS_SLOT_S) % APRS_HIGH_ALTITUDE_PERIOD_S);
   }
   else {
-    next_aprs = millis();
+    next_aprs_ms = millis();
   }
   // TODO: beep while we get a fix, maybe indicating the number of
   // visible satellites by a series of short beeps?
@@ -130,15 +130,22 @@ void get_pos()
   }
 }
 
+int32_t aprs_period_ms() {
+  if (gps_altitude_m > APRS_HIGH_ALTITUDE_M) {
+    return APRS_HIGH_ALTITUDE_PERIOD_S * 1000l;
+  }
+  return APRS_LOW_ALTITUDE_PERIOD_S * 1000l;
+}
+
 void loop()
 {
   // Time for another APRS frame
   wdt_reset();
-  if ((int32_t) (millis() - next_aprs) >= 0) {
+  if ((int32_t) (millis() - next_aprs_ms) >= 0) {
     get_pos();
     aprs_send();
     wdt_reset();
-    next_aprs += APRS_PERIOD * 1000L;
+    next_aprs_ms += aprs_period_ms();
     while (afsk_flush()) {
       power_save();
       wdt_reset();

@@ -30,10 +30,17 @@
 #endif
 
 // Module functions
-float meters_to_feet(float m)
+static float meters_to_feet(float m)
 {
   // 10000 ft = 3048 m
   return m / 0.3048;
+}
+
+static void assert_APRS_LOW_ALTITUDE_PERIOD_S_less_than_APRS_HIGH_ALTITUDE_PERIOD_S() {
+  switch (0) {
+    case 0:;
+    case APRS_LOW_ALTITUDE_PERIOD_S <= APRS_HIGH_ALTITUDE_PERIOD_S:;
+  }
 }
 
 // Exported functions
