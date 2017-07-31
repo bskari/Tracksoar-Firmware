@@ -40,7 +40,7 @@ float meters_to_feet(float m)
 void aprs_send()
 {
   char temp[12];                   // Temperature (int/ext)
-  const struct s_address addresses[] = { 
+  const struct s_address addresses[] = {
     {D_CALLSIGN, D_CALLSIGN_ID},  // Destination callsign
     {S_CALLSIGN, S_CALLSIGN_ID},  // Source callsign (-11 = balloon, -9 = car)
 #ifdef DIGI_PATH1
@@ -60,29 +60,29 @@ void aprs_send()
   ax25_send_byte('/');                // Symbol table
   ax25_send_string(gps_aprs_lon);     // Lon: 000deg and 25.80 min
   ax25_send_byte('O');                // Symbol: O=balloon, -=QTH
-  snprintf(temp, 4, "%03d", (int)(gps_course + 0.5)); 
+  snprintf(temp, 4, "%03d", (int)(gps_course_d + 0.5));
   ax25_send_string(temp);             // Course (degrees)
   ax25_send_byte('/');                // and
-  snprintf(temp, 4, "%03d", (int)(gps_speed + 0.5));
+  snprintf(temp, 4, "%03d", (int)(gps_speed_k + 0.5));
   ax25_send_string(temp);             // speed (knots)
   ax25_send_string("/A=");            // Altitude (feet). Goes anywhere in the comment area
-  snprintf(temp, 7, "%06ld", (long)(meters_to_feet(gps_altitude) + 0.5));
+  snprintf(temp, 7, "%06ld", (long)(meters_to_feet(gps_altitude_m) + 0.5));
   ax25_send_string(temp);
   // Pressure: "/Pa=12345"
   ax25_send_string("/Pa=");
-  snprintf(temp, 6, "%ld", sensors_pressure());
+  snprintf(temp, 6, "%ld", sensors_pressure_hpa());
   ax25_send_string(temp);
   // Humidity: "/Rh=84.56"
   ax25_send_string("/Rh=");
-  dtostrf(sensors_humidity(), -1, 2, temp);
+  dtostrf(sensors_humidity_rh(), -1, 2, temp);
   ax25_send_string(temp);
   // Temperature
   // "Ti=-8.70"
   ax25_send_string("/Ti=");
-  dtostrf(sensors_temperature(), -1, 2, temp);
+  dtostrf(sensors_temperature_c(), -1, 2, temp);
   ax25_send_string(temp);
 
-  // 
+  //
 //   ax25_send_string("/Ti=");
 //   snprintf(temp, 6, "%d", sensors_int_lm60());
 //   ax25_send_string(temp);

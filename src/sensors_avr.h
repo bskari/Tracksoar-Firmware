@@ -32,9 +32,9 @@
 #endif
 
 void sensors_setup();
-float sensors_temperature();
-int32_t sensors_pressure();
-float sensors_humidity();
+float sensors_temperature_c();
+int32_t sensors_pressure_hpa();
+float sensors_humidity_rh();
 
 #endif // ifndef __SENSORS_AVR_H__
 #endif // ifdef AVR

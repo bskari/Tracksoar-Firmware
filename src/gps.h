@@ -29,13 +29,13 @@
 extern char gps_time[7];       // HHMMSS
 extern uint32_t gps_seconds;   // seconds after midnight
 extern char gps_date[7];       // DDMMYY
-extern float gps_lat;
-extern float gps_lon;
+extern float gps_lat_d;
+extern float gps_lon_d;
 extern char gps_aprs_lat[9];
 extern char gps_aprs_lon[10];
-extern float gps_course;
-extern float gps_speed;
-extern float gps_altitude;
+extern float gps_course_d;     // Degrees clockwise from north
+extern float gps_speed_k;      // Knots
+extern float gps_altitude_m;   // Meters
 extern uint8_t gps_num_sats;
 extern bool gps_low_power_mode;
 

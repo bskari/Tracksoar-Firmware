@@ -61,7 +61,7 @@ static const t_nmea_parser gga_parsers[] = {
   NULL,             // N/S
   NULL,             // Longitude
   NULL,             // E/W
-  NULL,             // Fix quality 
+  NULL,             // Fix quality
   parse_num_sats,   // Number of satellites
   NULL,             // Horizontal dilution of position
   parse_altitude,   // Altitude
@@ -107,9 +107,9 @@ static float new_lat;
 static float new_lon;
 static char new_aprs_lat[9];
 static char new_aprs_lon[10];
-static float new_course;
-static float new_speed;
-static float new_altitude;
+static float new_course_d;
+static float new_speed_k;
+static float new_altitude_m;
 static byte  new_num_sats;
 
 // Public (extern) variables, readable from other modules
@@ -119,9 +119,9 @@ float gps_lat = 0;
 float gps_lon = 0;
 char gps_aprs_lat[9];
 char gps_aprs_lon[10];
-float gps_course = 0;
-float gps_speed = 0;
-float gps_altitude = 0;
+float gps_course_d = 0;
+float gps_speed_k = 0;
+float gps_altitude_m = 0;
 byte  gps_num_sats = 0;
 bool  gps_low_power_mode = false;
 
@@ -129,51 +129,51 @@ bool  gps_low_power_mode = false;
 // Ublox definitions
 
 // Cyclic (Power Save)
-const uint8_t setPSM[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 
+const uint8_t setPSM[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22,
   0x92 };
 
 
 // Max Performance
-const uint8_t setMax[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x00, 0x21, 
-  0x91 }; 
+const uint8_t setMax[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x00, 0x21,
+  0x91 };
 
 // Cold reset GPS
-const uint8_t set_reset[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87, 0x00, 
+const uint8_t set_reset[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87, 0x00,
   0x00, 0x94, 0xF5 };
 
 // Set to Flight (Airborne) mode
 const uint8_t setNav[] PROGMEM = {
-  0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 
-  0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00, 
-  0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00,
+  0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00,
+  0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC };
 
 // Disable GGL Sentences
-const uint8_t setGLL[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 
+const uint8_t setGLL[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x01, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x01, 0x01, 0x2B };
 
 // Disable GSA Sentences
-const uint8_t setGSA[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 
+const uint8_t setGSA[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x02, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x01, 0x02, 0x32 };
 
 // Disable GSV Sentences
-const uint8_t setGSV[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 
+const uint8_t setGSV[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x01, 0x03, 0x39 };
 
 // Disable VTG Sentences
-const uint8_t setVTG[] PROGMEM = { 
-  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 
+const uint8_t setVTG[] PROGMEM = {
+  0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x05, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x04, 0x46 };
 
 
 // Module functions
-unsigned char from_hex(char a) 
+unsigned char from_hex(char a)
 {
   if (a >= 'A' && a <= 'F')
     return a - 'A' + 10;
@@ -206,8 +206,8 @@ void parse_time(const char *token)
   strncpy(new_time, token, 6);
   // Terminate string
   new_time[6] = '\0';
-  
-  new_seconds = 
+
+  new_seconds =
     ((new_time[0] - '0') * 10 + (new_time[1] - '0')) * 60 * 60UL +
     ((new_time[2] - '0') * 10 + (new_time[3] - '0')) * 60 +
     ((new_time[4] - '0') * 10 + (new_time[5] - '0'));
@@ -271,17 +271,17 @@ void parse_lon_hemi(const char *token)
 
 void parse_speed(const char *token)
 {
-  new_speed = atof(token);
+  new_speed_k = atof(token);
 }
 
 void parse_course(const char *token)
 {
-  new_course = atof(token);
+  new_course_d = atof(token);
 }
 
 void parse_altitude(const char *token)
 {
-  new_altitude = atof(token);
+  new_altitude_m = atof(token);
 }
 
 void parse_num_sats(const char *token) {
@@ -289,11 +289,11 @@ void parse_num_sats(const char *token) {
   // https://code.google.com/p/project-horus/source/browse/trunk/trackuino/gps.cpp
   //
   /* convert our token to an integer */
-  int temp = atoi(token);    
+  int temp = atoi(token);
 
   /* range check it's between 0-32 satellites */
-  if(temp < 0)     
-    temp = 0;        
+  if(temp < 0)
+    temp = 0;
 
   if(temp > 32)     temp = 32;    /* store value away */
 
@@ -315,7 +315,7 @@ boolean getUBX_ACK(const uint8_t *MSG) {
   //  debugSerial.print(" * Reading ACK response: ");
   //#endif
 
-  // Construct the expected ACK packet    
+  // Construct the expected ACK packet
   ackPacket[0] = 0xB5;		// header
   ackPacket[1] = 0x62;		// header
   ackPacket[2] = 0x05;		// class
@@ -345,7 +345,7 @@ boolean getUBX_ACK(const uint8_t *MSG) {
     }
 
     // Timeout if no valid response in 3 seconds
-    if (millis() - startTime > 3000) { 
+    if (millis() - startTime > 3000) {
       //#ifdef DEBUG_GPS
       //      debugSerial.println(" (FAILED!)");
       //#endif
@@ -357,13 +357,13 @@ boolean getUBX_ACK(const uint8_t *MSG) {
       b = GPS_SERIAL.read();
 
       // Check that bytes arrive in sequence as per expected ACK packet
-      if (b == ackPacket[ackByteID]) { 
+      if (b == ackPacket[ackByteID]) {
         ackByteID++;
 
         //#ifdef DEBUG_GPS
         //        debugSerial.print(b, HEX);
         //#endif
-      } 
+      }
       else {
         ackByteID = 0;	// Reset and look again, invalid order
       }
@@ -392,7 +392,7 @@ void sendUBX(const uint8_t *MSG, uint8_t len) {
 //
 
 void setGPS_PowerSaveMode() {
-  // Power Save Mode 
+  // Power Save Mode
   sendUBX(setPSM, sizeof(setPSM)/sizeof(uint8_t));
 }
 
@@ -412,25 +412,25 @@ void resetGPS() {
 //
 void gps_setup() {
   int gps_success = 0;
-  
+
   strcpy(gps_time, "000000");
   strcpy(gps_aprs_lat, "0000.00N");
   strcpy(gps_aprs_lon, "00000.00E");
-  
-#ifdef GPS_USING_UBLOX  
+
+#ifdef GPS_USING_UBLOX
   // Setup for the uBLOX MAX-6/7/8
-  
+
   // Check to see if we need to power up the GPS
 #ifdef GPS_POWER_PIN
   pinMode(GPS_POWER_PIN,   OUTPUT);
   pin_write(GPS_POWER_PIN, LOW);
 #endif
 
-#ifdef GPS_POWER_SLEEP_TIME  
+#ifdef GPS_POWER_SLEEP_TIME
   // Add a bit of a delay here to allow the GPS a chance to wake up
   // (even if we aren't powering it via a digital pin)
   delay(GPS_POWER_SLEEP_TIME);
-#endif  
+#endif
 
 #ifdef GPS_LED_PIN
   // LED for GPS Status
@@ -441,22 +441,22 @@ void gps_setup() {
   // Set MAX-6 to flight mode
   int setup_attempts_remaining = 120;
   while (!gps_success && (setup_attempts_remaining--) >= 0) {
-    sendUBX(setNav, sizeof(setNav)/sizeof(uint8_t)); 
+    sendUBX(setNav, sizeof(setNav)/sizeof(uint8_t));
     gps_success = getUBX_ACK(setNav);
 	if (!gps_success) {
 	  // Should find a better way to indicate a problem?
 #ifdef GPS_LED_PIN
       pin_write(GPS_LED_PIN, HIGH);
-#endif	  
+#endif
       delay(500);
 	  }
 	}
-  
+
 #ifdef GPS_LED_PIN
   pin_write(GPS_LED_PIN, LOW);
-#endif  
+#endif
 
-  // Finally turn off any NMEA sentences we don't need (in this case it's 
+  // Finally turn off any NMEA sentences we don't need (in this case it's
   // everything except GGA and RMC)
   sendUBX(setGLL, sizeof(setGLL)/sizeof(uint8_t));   // Disable GGL
   sendUBX(setGSA, sizeof(setGSA)/sizeof(uint8_t));   // Disable GSA
@@ -520,18 +520,18 @@ bool gps_decode(char c)
           gps_lon = new_lon;
           strcpy(gps_aprs_lat, new_aprs_lat);
           strcpy(gps_aprs_lon, new_aprs_lon);
-          gps_course = new_course;
-          gps_speed = new_speed;
-          gps_altitude = new_altitude;
+          gps_course_d = new_course_d;
+          gps_speed_k = new_speed_k;
+          gps_altitude_m = new_altitude_m;
           gps_num_sats = new_num_sats;
-		  
+
 #ifdef GPS_USING_UBLOX
           if (gps_num_sats >= MIN_NO_CYCLIC_SATS) {
             if (!gps_low_power_mode) {
               setGPS_PowerSaveMode();
               gps_low_power_mode = true;
 			}
-		  } 
+		  }
 		  else {
             // Check to see if we WERE in low-power mode and either lost the
             // fix or were partially obscured
@@ -542,7 +542,7 @@ bool gps_decode(char c)
               setGps_MaxPerformanceMode();
 			}
 		  }
-#endif		  
+#endif
 
           ret = true;
         }
@@ -558,7 +558,7 @@ bool gps_decode(char c)
       num_tokens = 0;
       sentence_type = SENTENCE_UNK;
       break;
-    
+
     case '*':
       // Handle as ',', but prepares to receive checksum (ie. do not break)
       at_checksum = true;
@@ -612,4 +612,3 @@ bool gps_decode(char c)
   }
   return ret;
 }
-

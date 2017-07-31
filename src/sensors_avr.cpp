@@ -40,15 +40,15 @@
 	  }
 	}
 
-	float sensors_temperature() {
+	float sensors_temperature_c() {
 		return bme280.readTempC();
 	}
 
-	int32_t sensors_pressure() {
+	int32_t sensors_pressure_hpa() {
 		return (int32_t)bme280.readFloatPressure();
 	}
 
-	float sensors_humidity() {
+	float sensors_humidity_rh() {
 		return bme280.readFloatHumidity();
 	}
 
@@ -62,15 +62,15 @@
 	  }
 	}
 
-	float sensors_temperature() {
+	float sensors_temperature_c() {
 		return bmp805.readTemperature();
 	}
 
-	int32_t sensors_pressure() {
+	int32_t sensors_pressure_hpa() {
 		return bmp805.readPressure();
 	}
 
-	float sensors_humidity() {
+	float sensors_humidity_rh() {
 		return SHT2x.GetHumidity();
 	}
 #endif
