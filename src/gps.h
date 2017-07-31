@@ -29,8 +29,6 @@
 extern char gps_time[7];       // HHMMSS
 extern uint32_t gps_seconds;   // seconds after midnight
 extern char gps_date[7];       // DDMMYY
-extern float gps_lat_d;
-extern float gps_lon_d;
 extern char gps_aprs_lat[9];
 extern char gps_aprs_lon[10];
 extern float gps_course_d;     // Degrees clockwise from north
@@ -41,5 +39,6 @@ extern bool gps_low_power_mode;
 
 void gps_setup();
 bool gps_decode(char c);
+void dump_gps();
 
 #endif

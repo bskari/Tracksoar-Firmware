@@ -35,6 +35,7 @@ void sensors_setup();
 float sensors_temperature_c();
 int32_t sensors_pressure_hpa();
 float sensors_humidity_rh();
+void dump_sensors();
 
 #endif // ifndef __SENSORS_AVR_H__
 #endif // ifdef AVR

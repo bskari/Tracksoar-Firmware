@@ -75,5 +75,29 @@
 	}
 #endif
 
+void dump_sensors() {
+#ifdef DUMP_SENSORS_PERIOD_S
+  static char buffer[40];
+  float sensors_temperature_c();
+  int32_t sensors_pressure_hpa();
+  float sensors_humidity_rh();
+  snprintf(
+    buffer,
+    sizeof(buffer),
+    "%0.2f C %ld hPa %0.2f rh",
+    (double)sensors_temperature_c(),
+    sensors_pressure_hpa(),
+    (double)sensors_humidity_rh());
+  buffer[sizeof(buffer) - 1] = '\0';
+  Serial.println(buffer);
+#endif
+}
+
+static void statically_assert_DUMP_SENSORS_PERIOD_S_greater_than_zero() {
+  switch (0) {
+    case 0:;
+    case DUMP_SENSORS_PERIOD_S > 0:;
+  }
+}
 
 #endif // ifdef AVR

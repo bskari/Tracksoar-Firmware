@@ -62,6 +62,7 @@ static const uint32_t VALID_POS_TIMEOUT = 2000;  // ms
 
 // Module variables
 static int32_t next_aprs_ms = 0;
+static int32_t next_dump_sensors_ms = -1;
 
 
 void setup()
@@ -107,6 +108,9 @@ void setup()
   else {
     next_aprs_ms = millis();
   }
+
+  next_dump_sensors_ms = millis();
+
   // TODO: beep while we get a fix, maybe indicating the number of
   // visible satellites by a series of short beeps?
 }
@@ -156,6 +160,14 @@ void loop()
     afsk_debug();
 #endif
   }
+
+#ifdef DUMP_SENSORS_PERIOD_S
+  if ((int32_t) (millis() - next_dump_sensors_ms) >= 0) {
+    dump_gps();
+    dump_sensors();
+    next_dump_sensors_ms += DUMP_SENSORS_PERIOD_S * 1000l;
+  }
+#endif
 
   power_save(); // Incoming GPS data or interrupts will wake us up
 }

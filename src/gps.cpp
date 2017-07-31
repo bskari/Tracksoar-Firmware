@@ -38,6 +38,7 @@ static void parse_speed(const char *token);
 static void parse_course(const char *token);
 static void parse_altitude(const char *token);
 static void parse_num_sats(const char *token);
+static void parse_date(const char *token);
 
 // Module types
 typedef void (*t_nmea_parser)(const char *token);
@@ -82,7 +83,7 @@ static const t_nmea_parser rmc_parsers[] = {
   parse_lon_hemi,   // E/W
   parse_speed,      // Speed over ground in knots
   parse_course,     // Track angle in degrees (true)
-  NULL,             // Date (DDMMYY)
+  parse_date,       // Date (DDMMYY)
   NULL,             // Magnetic variation
   NULL              // E/W
 };
@@ -102,6 +103,7 @@ static unsigned int offset = 0;
 static bool active = false;
 static char gga_time[7] = "", rmc_time[7] = "";
 static char new_time[7];
+static char new_date[7];
 static uint32_t new_seconds;
 static float new_lat;
 static float new_lon;
@@ -115,6 +117,7 @@ static byte  new_num_sats;
 // Public (extern) variables, readable from other modules
 char gps_time[7];       // HHMMSS
 uint32_t gps_seconds = 0;   // seconds after midnight
+char gps_date[7];       // DDMMYY
 float gps_lat = 0;
 float gps_lon = 0;
 char gps_aprs_lat[9];
@@ -279,6 +282,12 @@ void parse_course(const char *token)
   new_course_d = atof(token);
 }
 
+void parse_date(const char* token)
+{
+  strncpy(new_date, token, 6);
+  new_date[6] = '\0';
+}
+
 void parse_altitude(const char *token)
 {
   new_altitude_m = atof(token);
@@ -414,6 +423,7 @@ void gps_setup() {
   int gps_success = 0;
 
   strcpy(gps_time, "000000");
+  strcpy(gps_date, "000000");
   strcpy(gps_aprs_lat, "0000.00N");
   strcpy(gps_aprs_lon, "00000.00E");
 
@@ -515,6 +525,7 @@ bool gps_decode(char c)
             active) {                             // Valid fix?
           // Atomically merge data from the two sentences
           strcpy(gps_time, new_time);
+          strcpy(gps_date, new_date);
           gps_seconds = new_seconds;
           gps_lat = new_lat;
           gps_lon = new_lon;
@@ -611,4 +622,20 @@ bool gps_decode(char c)
 #endif
   }
   return ret;
+}
+
+void dump_gps() {
+#ifdef DUMP_SENSORS_PERIOD_S
+  static char buffer[100];
+  snprintf(buffer, sizeof(buffer), "%s %s %s %s %0.1f m %0.1f course %0.1f m/s",
+    gps_date,
+    gps_time,
+    gps_aprs_lat,
+    gps_aprs_lon,
+    (double)gps_altitude_m,
+    (double)gps_course_d,
+    (double)(gps_speed_k * 0.514444f));  // 1 knot = 0.514444 m/s
+  buffer[sizeof(buffer) - 1] = '\0';
+  Serial.println(buffer);
+#endif
 }

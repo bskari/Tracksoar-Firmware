@@ -217,6 +217,10 @@
 // of the CPU activity.
 #define LED_PIN                 2
 
+// Dump sensor information to the serial port periodically. Leave undefined to
+// disable.
+#define DUMP_SENSORS_PERIOD_S 10
+
 // Debug info includes printouts from different modules to aid in testing and
 // debugging.
 //
