@@ -115,8 +115,12 @@ void setup()
   // visible satellites by a series of short beeps?
 }
 
-void get_pos()
+bool get_pos()
 {
+  static unsigned long last_pos_millis = 0;
+  if (millis() - last_pos_millis < 1000) {
+    return true;
+  }
   // Get a valid position from the GPS
   int valid_pos = 0;
   uint32_t timeout = millis();
@@ -126,12 +130,14 @@ void get_pos()
   } while ( (millis() - timeout < VALID_POS_TIMEOUT) && ! valid_pos) ;
 
   if (valid_pos) {
+    last_pos_millis = millis();
     if (gps_altitude_m > BUZZER_ALTITUDE_M) {
       buzzer_off();   // In space, no one can hear you buzz
     } else {
       buzzer_on();
     }
   }
+  return valid_pos;
 }
 
 int32_t aprs_period_ms() {
@@ -163,7 +169,9 @@ void loop()
 
 #ifdef DUMP_SENSORS_PERIOD_S
   if ((int32_t) (millis() - next_dump_sensors_ms) >= 0) {
-    dump_gps();
+    if (get_pos()) {
+      dump_gps();
+    }
     dump_sensors();
     next_dump_sensors_ms += DUMP_SENSORS_PERIOD_S * 1000l;
   }
