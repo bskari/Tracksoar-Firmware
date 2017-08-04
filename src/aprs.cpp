@@ -33,14 +33,7 @@
 static float meters_to_feet(float m)
 {
   // 10000 ft = 3048 m
-  return m / 0.3048;
-}
-
-static void assert_APRS_LOW_ALTITUDE_PERIOD_S_less_than_APRS_HIGH_ALTITUDE_PERIOD_S() {
-  switch (0) {
-    case 0:;
-    case APRS_LOW_ALTITUDE_PERIOD_S <= APRS_HIGH_ALTITUDE_PERIOD_S:;
-  }
+  return m * 3.28084;
 }
 
 // Exported functions
@@ -104,4 +97,15 @@ void aprs_send()
   ax25_send_footer();
 
   ax25_flush_frame();                 // Tell the modem to go
+}
+
+#pragma GCC diagnostic ignored "-Wunused-function"
+static void statically_assert_APRS_LOW_ALTITUDE_PERIOD_stuff() {
+  switch (0) {
+    case 0:;
+    case APRS_LOW_ALTITUDE_PERIOD_S <= APRS_HIGH_ALTITUDE_PERIOD_S:;
+    case (APRS_LOW_ALTITUDE_PERIOD_S > 1) + 1:;
+    case (APRS_HIGH_ALTITUDE_PERIOD_S > 1) + 2:;
+    case (APRS_HIGH_ALTITUDE_M > 0) + 3:;
+  }
 }
