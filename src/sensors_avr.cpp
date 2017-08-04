@@ -18,6 +18,7 @@
 
 #ifdef AVR
 
+#include "format.h"
 #include "sensors_avr.h"
 #include <Arduino.h>
 
@@ -76,23 +77,23 @@
 #endif
 
 void dump_sensors() {
-#ifdef DUMP_SENSORS_PERIOD_S
   static char buffer[40];
-  float sensors_temperature_c();
-  int32_t sensors_pressure_hpa();
-  float sensors_humidity_rh();
+  const float temperature_c = sensors_temperature_c();
+  const float humidity_rh = sensors_humidity_rh();
   snprintf(
     buffer,
     sizeof(buffer),
-    "%0.2f C %ld hPa %0.2f rh",
-    (double)sensors_temperature_c(),
+    "%d.%03d C %ld hPa %d.%03d%% rh",
+    (int)temperature_c,
+    thousandths(temperature_c),
     sensors_pressure_hpa(),
-    (double)sensors_humidity_rh());
+    (int)humidity_rh,
+    thousandths(humidity_rh));
   buffer[sizeof(buffer) - 1] = '\0';
   Serial.println(buffer);
-#endif
 }
 
+#pragma GCC diagnostic ignored "-Wunused-function"
 static void statically_assert_DUMP_SENSORS_PERIOD_S_greater_than_zero() {
   switch (0) {
     case 0:;

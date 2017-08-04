@@ -16,6 +16,7 @@
  */
 
 #include "config.h"
+#include "format.h"
 #include "pin.h"
 #include "gps.h"
 #if (ARDUINO + 1) >= 100
@@ -625,17 +626,25 @@ bool gps_decode(char c)
 }
 
 void dump_gps() {
-#ifdef DUMP_SENSORS_PERIOD_S
   static char buffer[100];
-  snprintf(buffer, sizeof(buffer), "%s %s %s %s %0.1f m %0.1f course %0.1f m/s",
+  const float m_per_s = gps_speed_k * 0.514444f;  // 1 knot = 0.514444 m/s
+  const float mph = gps_speed_k * 1.15078f;  // 1 knot = 1.17078 mph
+  snprintf(
+    buffer,
+    sizeof(buffer),
+    "%s %s %s %s %d.%03d m %d.%03d degrees %d.%03d m/s %d.%03d mph",
     gps_date,
     gps_time,
     gps_aprs_lat,
     gps_aprs_lon,
-    (double)gps_altitude_m,
-    (double)gps_course_d,
-    (double)(gps_speed_k * 0.514444f));  // 1 knot = 0.514444 m/s
+    (int)gps_altitude_m,  // Arduino doesn't support %f in printf, so use int
+    thousandths(gps_altitude_m),
+    (int)gps_course_d,
+    thousandths(gps_course_d),
+    (int)m_per_s,
+    thousandths(m_per_s),
+    (int)mph,
+    thousandths(mph));
   buffer[sizeof(buffer) - 1] = '\0';
   Serial.println(buffer);
-#endif
 }
